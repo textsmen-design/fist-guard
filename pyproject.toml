@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "fist-guard-demo"
+version = "0.1.0"
+description = "FIST Guard, демо-версия: локальная проверка проекта на ключи API, токены и .env перед публикацией"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "Proprietary. © 2026 Олег / GONKA LAB. All rights reserved. See LICENSE." }
+authors = [{ name = "Олег / GONKA LAB" }]
+classifiers = ["License :: Other/Proprietary License"]
+dependencies = []
+
+[project.scripts]
+fist-guard = "fist_guard.cli:main"
+
+[tool.setuptools]
+packages = ["fist_guard"]
+
+[tool.setuptools.package-data]
+fist_guard = ["web/*.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

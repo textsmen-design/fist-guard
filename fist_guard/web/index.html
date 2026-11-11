@@ -1,0 +1,315 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FIST Guard</title>
+<!-- © 2026 Олег / GONKA LAB. Все права защищены. -->
+<style>
+:root {
+  --bg: #f6f4ef; --panel: #ffffff; --panel-2: #f1eee6; --text: #1d1b16; --muted: #6b665a;
+  --line: #e2ddd0; --accent: #b7791f; --accent-ink: #ffffff;
+  --red: #c0352b; --red-bg: #fbe9e7; --yellow: #a86b00; --yellow-bg: #fdf3d8;
+  --green: #2f7d4a; --green-bg: #e5f4ea; --grey-bg: #eeebe3;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --radius: 12px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #14130f; --panel: #1c1b16; --panel-2: #24221b; --text: #ece8dc; --muted: #a39d8c;
+    --line: #34312a; --accent: #f0b43c; --accent-ink: #1a1405;
+    --red: #ff7b6e; --red-bg: #3a1c18; --yellow: #f2c14e; --yellow-bg: #362b12;
+    --green: #6fcf8e; --green-bg: #15301f; --grey-bg: #26241e;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #14130f; --panel: #1c1b16; --panel-2: #24221b; --text: #ece8dc; --muted: #a39d8c;
+  --line: #34312a; --accent: #f0b43c; --accent-ink: #1a1405;
+  --red: #ff7b6e; --red-bg: #3a1c18; --yellow: #f2c14e; --yellow-bg: #362b12;
+  --green: #6fcf8e; --green-bg: #15301f; --grey-bg: #26241e;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+.wrap { max-width: 1040px; margin: 0 auto; padding: 24px 16px 64px; }
+header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+header svg { flex: none; }
+header h1 { font-size: 22px; margin: 0; letter-spacing: .2px; }
+header .sub { color: var(--muted); font-size: 13px; }
+header .spacer { flex: 1; }
+.badge-local { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
+form.scan { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+form.scan input[type=text] { flex: 1 1 320px; min-width: 0; font: 14px var(--mono); padding: 11px 12px;
+  border: 1px solid var(--line); border-radius: 10px; background: var(--panel-2); color: var(--text); }
+form.scan input[type=text]:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+button { font: inherit; cursor: pointer; border-radius: 10px; border: 1px solid var(--line);
+  background: var(--panel-2); color: var(--text); padding: 10px 14px; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; padding: 11px 20px; }
+button:disabled { opacity: .55; cursor: progress; }
+label.chk { display: inline-flex; gap: 6px; align-items: center; color: var(--muted); font-size: 13px; }
+.hint { color: var(--muted); font-size: 13px; margin-top: 10px; }
+.error { color: var(--red); margin-top: 10px; font-size: 14px; }
+.verdict { margin-top: 18px; border-radius: var(--radius); padding: 18px 20px; display: grid;
+  grid-template-columns: auto 1fr; gap: 6px 16px; align-items: center; border: 1px solid transparent; }
+.verdict .light { width: 44px; height: 44px; border-radius: 50%; grid-row: span 2; display: grid; place-items: center;
+  font-weight: 700; font-size: 20px; color: #fff; }
+.verdict h2 { margin: 0; font-size: 20px; }
+.verdict p { margin: 0; }
+.verdict.RED { background: var(--red-bg); border-color: var(--red); } .verdict.RED .light { background: var(--red); }
+.verdict.YELLOW { background: var(--yellow-bg); border-color: var(--yellow); } .verdict.YELLOW .light { background: var(--yellow); }
+.verdict.GREEN { background: var(--green-bg); border-color: var(--green); } .verdict.GREEN .light { background: var(--green); }
+.meta { color: var(--muted); font-size: 13px; margin-top: 8px; overflow-wrap: anywhere; }
+.counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+.count { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px;
+  text-align: left; cursor: pointer; }
+.count b { display: block; font-size: 26px; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.count span { color: var(--muted); font-size: 13px; }
+.count.high b { color: var(--red); } .count.medium b { color: var(--yellow); } .count.low b { color: var(--muted); }
+.count.protected b { color: var(--green); }
+.count.active { outline: 2px solid var(--accent); }
+.recs { margin-top: 14px; }
+.recs h3, .findings h3 { margin: 0 0 8px; font-size: 16px; }
+.recs ol { margin: 0; padding-left: 20px; } .recs li { margin: 4px 0; }
+.recs code { font-family: var(--mono); font-size: 13px; background: var(--panel-2); padding: 1px 5px; border-radius: 5px; }
+.toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 18px 0 10px; }
+.toolbar .spacer { flex: 1; }
+.file { background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius); margin-bottom: 10px; overflow: hidden; }
+.file > header { margin: 0; padding: 10px 14px; background: var(--panel-2); border-bottom: 1px solid var(--line);
+  display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.file .fname { font: 13px var(--mono); overflow-wrap: anywhere; flex: 1 1 240px; }
+.tag { font-size: 12px; border-radius: 999px; padding: 2px 9px; white-space: nowrap; background: var(--grey-bg); color: var(--muted); }
+.tag.tracked { background: var(--red-bg); color: var(--red); }
+.tag.untracked, .tag.no-git { background: var(--yellow-bg); color: var(--yellow); }
+.tag.ignored { background: var(--green-bg); color: var(--green); }
+.item { padding: 12px 14px; border-top: 1px solid var(--line); display: grid; grid-template-columns: 96px 1fr; gap: 4px 12px; }
+.item:first-of-type { border-top: 0; }
+.sev { font-size: 12px; font-weight: 600; align-self: start; padding-top: 2px; }
+.sev.high { color: var(--red); } .sev.medium { color: var(--yellow); } .sev.low { color: var(--muted); }
+.item .title { font-weight: 600; }
+.item .title small { font-weight: 400; color: var(--muted); }
+.item pre { grid-column: 2; margin: 4px 0 0; font: 12.5px/1.45 var(--mono); background: var(--panel-2); border-radius: 8px;
+  padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.item .advice { grid-column: 2; color: var(--muted); font-size: 13.5px; }
+.item.dim { opacity: .6; }
+.empty { text-align: center; color: var(--muted); padding: 28px; }
+.foot { margin-top: 28px; color: var(--muted); font-size: 12.5px; text-align: center; }
+.hidden { display: none !important; }
+.spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid currentColor; border-right-color: transparent;
+  border-radius: 50%; animation: spin .8s linear infinite; vertical-align: -2px; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (max-width: 640px) {
+  .counts { grid-template-columns: repeat(2, 1fr); }
+  .item { grid-template-columns: 1fr; } .item pre, .item .advice { grid-column: 1; }
+  header .badge-local { display: none; }
+}
+@media print { form.scan, .toolbar button, #themeBtn { display: none !important; } body { background: #fff; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <svg width="40" height="40" viewBox="0 0 40 40" aria-hidden="true">
+      <rect x="1" y="1" width="38" height="38" rx="10" fill="var(--accent)"/>
+      <g fill="var(--accent-ink)">
+        <rect x="9" y="12" width="5" height="11" rx="2.5"/><rect x="15" y="10" width="5" height="13" rx="2.5"/>
+        <rect x="21" y="10" width="5" height="13" rx="2.5"/><rect x="27" y="12" width="4.5" height="11" rx="2.25"/>
+        <path d="M9 21h22.5v5a7 7 0 0 1-7 7H16a7 7 0 0 1-7-7z"/>
+      </g>
+    </svg>
+    <div>
+      <h1>FIST Guard</h1>
+      <div class="sub">Проверка проекта на секреты перед публикацией · демо-версия</div>
+    </div>
+    <div class="spacer"></div>
+    <span class="badge-local" title="Файлы читаются только на этом компьютере">🔒 Работает локально</span>
+    <button id="themeBtn" type="button" title="Тема">◐</button>
+  </header>
+
+  <section class="panel" id="formPanel">
+    <form class="scan" id="scanForm">
+      <input type="text" id="path" placeholder="/Users/имя/Projects/my-site" autocomplete="off" spellcheck="false" aria-label="Путь к папке">
+      <button class="primary" id="scanBtn" type="submit">Проверить</button>
+    </form>
+    <div class="hint">Вставьте путь к папке проекта (в Finder: правый клик по папке → удерживайте ⌥ Option → «Скопировать путь»).
+      Файлы не изменяются, не удаляются и никуда не отправляются.</div>
+    <div class="error hidden" id="error"></div>
+  </section>
+
+  <section id="result" class="hidden">
+    <div class="verdict" id="verdict"><div class="light" id="light"></div><h2 id="vTitle"></h2><p id="vText"></p></div>
+    <div class="meta" id="meta"></div>
+    <div class="counts" id="counts"></div>
+    <div class="panel recs hidden" id="recs"><h3>Что сделать</h3><ol id="recList"></ol></div>
+    <div class="findings">
+      <div class="toolbar">
+        <h3 style="margin:0">Находки</h3>
+        <span class="spacer"></span>
+        <label class="chk"><input type="checkbox" id="showProtected"> показать закрытые .gitignore</label>
+        <button type="button" id="exportHtml">Скачать HTML</button>
+      </div>
+      <div id="list"></div>
+    </div>
+  </section>
+
+  <div class="foot">FIST Guard, демо-версия · © 2026 Олег / GONKA LAB. Все права защищены · значения секретов замаскированы</div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var DATA = /*__FIST_DATA__*/null;
+  var TOKEN = "__FIST_TOKEN__";
+  var START_PATH = "__FIST_START_PATH__";
+  var STATIC = DATA !== null || !TOKEN || TOKEN.indexOf("__FIST") === 0;
+  var SEV_RU = { high: "Критично", medium: "Проверить", low: "К сведению" };
+  var LIGHT = { RED: "✕", YELLOW: "!", GREEN: "✓" };
+  var filter = null;
+  var current = null;
+
+  function $(id) { return document.getElementById(id); }
+  function el(tag, cls, text) {
+    var e = document.createElement(tag);
+    if (cls) e.className = cls;
+    if (text !== undefined && text !== null) e.textContent = text;
+    return e;
+  }
+
+  // тема
+  try { var t = localStorage.getItem("fist-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+  $("themeBtn").addEventListener("click", function () {
+    var root = document.documentElement;
+    var dark = root.dataset.theme ? root.dataset.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = dark ? "light" : "dark";
+    try { localStorage.setItem("fist-theme", root.dataset.theme); } catch (e) {}
+  });
+
+  function renderRec(text) {
+    // `код` → <code>, остальное как текст
+    var li = el("li");
+    text.split("`").forEach(function (part, i) { li.appendChild(i % 2 ? el("code", null, part) : document.createTextNode(part)); });
+    return li;
+  }
+
+  function render(res) {
+    current = res;
+    $("result").classList.remove("hidden");
+    var v = $("verdict");
+    v.className = "verdict " + res.verdict;
+    $("light").textContent = LIGHT[res.verdict];
+    $("vTitle").textContent = res.verdict_ru;
+    $("vText").textContent = res.summary;
+    var g = res.git || {};
+    var meta = res.root + " · " + res.scanned_at + " · файлов проверено: " + res.stats.files_scanned;
+    meta += g.is_repo ? " · git: да" : " · без git";
+    $("meta").textContent = meta;
+
+    var counts = $("counts"); counts.textContent = "";
+    [["high", "Критично"], ["medium", "Проверить"], ["low", "К сведению"], ["protected", "Закрыто .gitignore"]].forEach(function (c) {
+      var b = el("button", "count " + c[0] + (filter === c[0] ? " active" : ""));
+      b.type = "button";
+      b.appendChild(el("b", null, String(res.counts[c[0]])));
+      b.appendChild(el("span", null, c[1]));
+      b.addEventListener("click", function () {
+        filter = filter === c[0] ? null : c[0];
+        if (c[0] === "protected") $("showProtected").checked = true;
+        render(current);
+      });
+      counts.appendChild(b);
+    });
+
+    var recList = $("recList"); recList.textContent = "";
+    (res.recommendations || []).forEach(function (r) { recList.appendChild(renderRec(r)); });
+    $("recs").classList.toggle("hidden", !(res.recommendations || []).length);
+
+    renderList(res);
+  }
+
+  function renderList(res) {
+    var showProtected = $("showProtected").checked;
+    var list = $("list"); list.textContent = "";
+    var items = res.findings.filter(function (f) {
+      if (filter === "protected") return !f.exposed;
+      if (!f.exposed && !showProtected) return false;
+      if (filter && filter !== "protected") return f.exposed && f.severity === filter;
+      return true;
+    });
+    if (!items.length) {
+      list.appendChild(el("div", "panel empty", res.findings.length ? "В этом фильтре находок нет." : "Ничего подозрительного не найдено."));
+      return;
+    }
+    var groups = {}, order = [];
+    items.forEach(function (f) {
+      var key = f.path + "|" + f.git_status;
+      if (!groups[key]) { groups[key] = []; order.push(key); }
+      groups[key].push(f);
+    });
+    order.forEach(function (key) {
+      var fs = groups[key], first = fs[0];
+      var box = el("div", "file");
+      var h = el("header");
+      h.appendChild(el("span", "fname", first.path));
+      h.appendChild(el("span", "tag " + first.git_status, first.git_status_ru));
+      box.appendChild(h);
+      fs.forEach(function (f) {
+        var it = el("div", "item" + (f.exposed ? "" : " dim"));
+        it.appendChild(el("div", "sev " + f.severity, SEV_RU[f.severity]));
+        var title = el("div", "title", f.title + " ");
+        var where = f.line ? "строка " + f.line : (f.commit ? "коммит " + f.commit : "весь файл");
+        title.appendChild(el("small", null, where));
+        it.appendChild(title);
+        if (f.preview) it.appendChild(el("pre", null, f.preview));
+        it.appendChild(el("div", "advice", f.advice));
+        box.appendChild(it);
+      });
+      list.appendChild(box);
+    });
+  }
+
+  $("showProtected").addEventListener("change", function () { if (current) renderList(current); });
+
+  function download(name, text, type) {
+    var a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([text], { type: type }));
+    a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 500);
+  }
+
+  $("exportHtml").addEventListener("click", function () {
+    if (STATIC) { download("fist-guard-report.html", "<!doctype html>\n" + document.documentElement.outerHTML, "text/html"); return; }
+    location.href = "/api/export/html?t=" + encodeURIComponent(TOKEN);
+  });
+
+  $("scanForm").addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    var path = $("path").value.trim();
+    var err = $("error"); err.classList.add("hidden");
+    if (!path) { err.textContent = "Укажите путь к папке."; err.classList.remove("hidden"); return; }
+    var btn = $("scanBtn");
+    btn.disabled = true; btn.textContent = ""; btn.appendChild(el("span", "spinner")); btn.appendChild(document.createTextNode("Проверяю…"));
+    fetch("/api/scan", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-FIST-Token": TOKEN },
+      body: JSON.stringify({ path: path })
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); })
+      .then(function (x) {
+        if (!x.ok) throw new Error(x.j.error || "Ошибка");
+        filter = null; render(x.j);
+        try { localStorage.setItem("fist-last-path", path); } catch (e) {}
+      })
+      .catch(function (e) { err.textContent = e.message; err.classList.remove("hidden"); })
+      .then(function () { btn.disabled = false; btn.textContent = "Проверить"; });
+  });
+
+  if (STATIC) {
+    $("formPanel").classList.add("hidden");
+    if (DATA) render(DATA);
+  } else {
+    var p = START_PATH && START_PATH.indexOf("__FIST") !== 0 ? START_PATH : "";
+    if (!p) { try { p = localStorage.getItem("fist-last-path") || ""; } catch (e) {} }
+    $("path").value = p;
+  }
+})();
+</script>
+</body>
+</html>
